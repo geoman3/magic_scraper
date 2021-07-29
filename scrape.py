@@ -1,8 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
-import json, logging, traceback, re
+import json, logging, traceback, re, os
 
+IMAGE_URL = "https://gatherer.wizards.com/Handlers/Image.ashx"
 GATHERER_PAGES = "https://gatherer.wizards.com/Pages/Search/Default.aspx?name=+[]"
 DATA_FILE = "cards.json"
 
@@ -62,7 +63,15 @@ def parse_card_element(element: BeautifulSoup) -> dict:
         "editions": get_editions_metadata(element.find("td", attrs = {"class": "setVersions"}))
     }
 
-def main():
+def scrape_image(multiverse_id: str, directory: str = "card_images"):
+    response = requests.get(IMAGE_URL, params={"multiverseid": multiverse_id, "type": card})
+    os.mkdir(directory) if not os.path.exists(directory)
+    with open(os.path.join(directory, f"{multiverse_id}.jpeg"), "wb") as img_file:
+        img_file.write(response.content)
+    return os.path.join(directory, f"{multiverse_id}.jpeg")
+
+
+def scrape_all_cards_metadata():
     soup = BeautifulSoup(requests.get(GATHERER_PAGES).content, "html.parser") 
     num_pages = int(get_url_args(soup.find_all("div", attrs = {"class": "pagingcontrols"})[-1].find_all("a")[-1]["href"]).get("page")) + 1
     
@@ -94,4 +103,4 @@ def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    main()
+    scrape_all_cards_metadata()
