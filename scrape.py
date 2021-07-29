@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 
 import json, logging, traceback, re, os
 
-IMAGE_URL = "https://gatherer.wizards.com/Handlers/Image.ashx"
 GATHERER_PAGES = "https://gatherer.wizards.com/Pages/Search/Default.aspx?name=+[]"
+IMAGE_URL = "https://gatherer.wizards.com/Handlers/Image.ashx"
 DATA_FILE = "cards.json"
 
 def get_url_args(url: str) -> dict:
@@ -27,7 +27,7 @@ def parse_typeline(typeline: str) -> dict:
     return {
         "types": {
             "supertypes": typeline.split("  \u2014")[0].split(" ")[:-1], # I gave up on the regex
-            "type": typeline.split("  \u2014")[0].split(" ")[-1], # I gave up on the regex
+            "type": typeline.split("  \u2014")[0].split(" ")[-1],
             "subtypes": typeline.split("  \u2014 ")[-1].split("\r\n")[0].split(" ") if "\u2014" in typeline else []
         },
         "stats": {
@@ -85,6 +85,7 @@ def scrape_all_cards_metadata():
     soup = BeautifulSoup(requests.get(GATHERER_PAGES).content, "html.parser") 
     num_pages = int(get_url_args(soup.find_all("div", attrs = {"class": "pagingcontrols"})[-1].find_all("a")[-1]["href"]).get("page")) + 1
     
+    # load in cards already downloaded
     with open(DATA_FILE, "r") as j:
         data = json.load(j)
 
@@ -92,10 +93,12 @@ def scrape_all_cards_metadata():
         for page_number in range(num_pages):
             if page_number in data["completed_pages"]: logging.info(f"Page {page_number}/{num_pages-1} already pulled, skipping ..."); continue
 
+            # Here we download the page and parse the results
             logging.info(f"Grabbing page: {page_number}/{num_pages-1}")
             page_soup = BeautifulSoup(requests.get(GATHERER_PAGES, params={"page": page_number}).content, "html.parser")
             for card_element in page_soup.find_all("tr", attrs = {"class": "cardItem"}):
                 card = parse_card_element(card_element)
+                # Ensure we dont duplicate cards already in our collection
                 if not list(filter(lambda x: x["name"] == card["name"], data["cards"])):
                     data["cards"].append(card)
                 else:
@@ -113,4 +116,4 @@ def scrape_all_cards_metadata():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    scrape_all_card_images()
+    logging.info("You should remove this log and call a function you goose")
