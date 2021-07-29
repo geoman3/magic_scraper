@@ -63,7 +63,7 @@ def parse_card_element(element: BeautifulSoup) -> dict:
         "editions": get_editions_metadata(element.find("td", attrs = {"class": "setVersions"}))
     }
 
-def scrape_image(multiverse_id: str, directory: str = "card_images"):
+def scrape_card_image(multiverse_id: str, directory: str = "card_images"):
     response = requests.get(IMAGE_URL, params={"multiverseid": multiverse_id, "type": "card"})
     if not os.path.exists(directory): os.mkdir(directory)
     with open(os.path.join(directory, f"{multiverse_id}.jpeg"), "wb") as img_file:
@@ -77,7 +77,7 @@ def scrape_all_card_images():
         logging.info(f"scraping images for {card.get('name')} - {len(card.get('editions'))} different editions")
         for edition in card.get("editions"):
             if not os.path.exists(os.path.join("card_images", f"{edition.get('multiverse_id')}.jpeg")):
-                scrape_image(edition.get('multiverse_id'))
+                scrape_card_image(edition.get('multiverse_id'))
             else:
                 logging.info(f"image already exists for multiverse id: {edition.get('multiverse_id')}")
 
