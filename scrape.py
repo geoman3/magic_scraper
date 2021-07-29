@@ -68,7 +68,18 @@ def scrape_image(multiverse_id: str, directory: str = "card_images"):
     if not os.path.exists(directory): os.mkdir(directory)
     with open(os.path.join(directory, f"{multiverse_id}.jpeg"), "wb") as img_file:
         img_file.write(response.content)
-    return os.path.join(directory, f"{multiverse_id}.jpeg")
+
+def scrape_all_card_images():
+    with open(DATA_FILE, "r") as j:
+        data = json.load(j)
+
+    for card in data.get("cards"):
+        logging.info(f"scraping images for {card.get('name')} - {len(card.get('editions'))} different editions")
+        for edition in card.get("editions"):
+            if not os.path.exists(os.path.join("card_images", f"{edition.get('multiverse_id')}.jpeg")):
+                scrape_image(edition.get('multiverse_id'))
+            else:
+                logging.info(f"image already exists for multiverse id: {edition.get('multiverse_id')}")
 
 def scrape_all_cards_metadata():
     soup = BeautifulSoup(requests.get(GATHERER_PAGES).content, "html.parser") 
@@ -102,4 +113,4 @@ def scrape_all_cards_metadata():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    scrape_all_cards_metadata()
+    scrape_all_card_images()
