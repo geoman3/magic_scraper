@@ -2,6 +2,12 @@ beautifulsoup4==4.9.3
 certifi==2021.5.30
 charset-normalizer==2.0.3
 idna==3.2
+ImageHash==4.2.1
+numpy==1.21.1
+Pillow==8.3.1
+PyWavelets==1.1.1
 requests==2.26.0
+scipy==1.7.0
+six==1.16.0
 soupsieve==2.2.1
 urllib3==1.26.6
