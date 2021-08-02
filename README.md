@@ -4,16 +4,6 @@ Hey!
 
 This is a small project for making a model for recognising / identifying cards from Wizards of the Coast's (WotC, I pronounce it "Wotzee") card game Magic the Gathering, the TCGPlayer app already does this but I find it a bit hard to use if I just want to scan my trade binder to catalogue my collection.
 
-## TO DO
-
-1. Parse the type line for {(supertypes) (type) - (subtypes) (P/T or Loyalty)} - done
-
-2. Download card images - in progress
-
-3. define model problem
-
-4. train model - might go back and forth between 3 / 4 a lot
-
 ## DEV LOG
 
 2021/07/28

@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import imagehash
 
-import mtgcard
+import deck
 
 import json, logging, traceback, os
 
@@ -15,7 +15,7 @@ def scrape_card_image(multiverse_id: str, directory: str):
     image_path = os.path.join(directory, f"{multiverse_id}.jpeg")
     if not os.path.exists(directory): os.makedirs(directory, exist_ok = True)
     if os.path.exists(image_path):
-        logging.info(f"image already exists for multiverse id: {edition.get('multiverse_id')}")
+        logging.info(f"image already exists at: {image_path}")
     else:
         response = requests.get(IMAGE_URL, params={"multiverseid": multiverse_id, "type": "card"})
         with open(image_path, "wb") as img_file:
@@ -42,7 +42,7 @@ def scrape_all_card_images():
 
 def scrape_all_cards_metadata():
     soup = BeautifulSoup(requests.get(GATHERER_PAGES).content, "html.parser") 
-    num_pages = int(mtgcard.BSParser.get_url_args(soup.find_all("div", attrs = {"class": "pagingcontrols"})[-1].find_all("a")[-1]["href"]).get("page")) + 1
+    num_pages = int(deck.BSParser.get_url_args(soup.find_all("div", attrs = {"class": "pagingcontrols"})[-1].find_all("a")[-1]["href"]).get("page")) + 1
     
     # load in cards already downloaded
     if os.path.exists(DATA_FILE):
@@ -59,7 +59,7 @@ def scrape_all_cards_metadata():
             logging.info(f"Grabbing page: {page_number}/{num_pages-1}")
             page_soup = BeautifulSoup(requests.get(GATHERER_PAGES, params={"page": page_number}).content, "html.parser")
             for card_element in page_soup.find_all("tr", attrs = {"class": "cardItem"}):
-                json_card = mtgcard.BSParser(card_element).parse_card_element()
+                json_card = deck.BSParser(card_element).parse_card_element()
                 # Ensure we dont duplicate cards already in our collection
                 if not list(filter(lambda x: x["name"] == json_card["name"], data["cards"])):
                     data["cards"].append(json_card)
@@ -78,3 +78,4 @@ def scrape_all_cards_metadata():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     scrape_all_card_images()
+    
