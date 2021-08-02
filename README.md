@@ -21,3 +21,7 @@ I now need to go about downloading each of the cards' images, each card has 1 or
 2021/08/01
 
 I saw this "https://tmikonen.github.io/quantitatively/2020-01-01-magic-card-detector/" blog and Im gonna give it a go, this person wisely used a perceptual hash instead of employing a model given we have an exact copy of the objects we are trying to identify, saving on the need to do any sort of machine learning. However they only tested it on a particular set of 290 cards (alpha), Im now gonna see if this method extends to the full collection of ~23 000.
+
+2021/08/02
+
+I experimented with different methods of checking a calculated phash against the known phash - I will need to restructure my data to make it easier to sort through all cards to find the closest phash
