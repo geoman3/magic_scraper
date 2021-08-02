@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import imagehash
+import cv2
 
 import deck
 
@@ -10,6 +11,20 @@ GATHERER_PAGES = "https://gatherer.wizards.com/Pages/Search/Default.aspx?name=+[
 IMAGE_URL = "https://gatherer.wizards.com/Handlers/Image.ashx"
 DATA_FILE = os.path.join("data", "cards.json")
 IMAGES_DIR = os.path.join("data", "card_images")
+
+def compute_all_phashs():
+    with open(DATA_FILE, "r") as j:
+        data = json.load(j)
+
+    editions = []
+    for card in data.get("cards"):
+        editions += card.get("editions")
+    for i, edition in enumerate(editions):
+        # print(os.path.join(IMAGES_DIR, f"{edition.get('multiverse_id')}.jpeg"))
+        # img = cv2.imread(os.path.join(IMAGES_DIR, f"{edition.get('multiverse_id')}.jpeg"))
+        # phash = deck.MagicCard()._compute_phash(card_cutout = img)
+        phash = deck.ReferenceCard(edition.get("multiverse_id")).get_ref_phash()
+        print(i, len(editions), end="\r")
 
 def scrape_card_image(multiverse_id: str, directory: str):
     image_path = os.path.join(directory, f"{multiverse_id}.jpeg")
@@ -77,5 +92,5 @@ def scrape_all_cards_metadata():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    scrape_all_card_images()
+    compute_all_phashs()
     

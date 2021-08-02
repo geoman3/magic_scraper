@@ -3,6 +3,7 @@ import re, os, logging, json
 from PIL import Image
 import imagehash
 import numpy as np
+import itertools
 
 class BSParser:
     """
@@ -74,6 +75,9 @@ class MagicCard:
     """
     Parent class to ReferenceCard and CandidateCard
     """
+    def __init__(self):
+        pass
+
     def _compute_phash(self, card_cutout: np.ndarray) -> imagehash.ImageHash:
         """
         common phash function between the ref and candidate cards
@@ -92,20 +96,20 @@ class ReferenceCard(MagicCard):
                 self.multiverse_id
             ))
 
-    def get_ref_image(self, multiverse_id: str, images_dir: str = os.path.join("data", "card_images")):
-        filepath = os.path.join(images_dir, f"{multiverse_id}.jpeg")
+    def get_ref_image(self, images_dir: str = os.path.join("data", "card_images")):
+        filepath = os.path.join(images_dir, f"{self.multiverse_id}.jpeg")
         assert os.path.exists(filepath), f"Could not find image at: {filepath}"
         return Image.open(filepath)
 
-    def get_ref_phash(self, multiverse_id: str, data_path: str = os.path.join("data", "cards.json")):
+    def get_ref_phash(self, data_path: str = os.path.join("data", "cards.json")):
         with open(data_path, "r") as j:
             data = json.load(j)
         edition = list(filter(
-            lambda x: x.get("multiverse_id") == multiverse_id,
-            sum(map(lambda x: x.get("editions"), data.get("cards")))))
+            lambda x: x.get("multiverse_id") == self.multiverse_id,
+            itertools.chain.from_iterable(map(lambda x: x.get("editions"), data.get("cards")))))
 
-        assert edition, f"Could not find edition with multiverse id: {multiverse_id}"
-        return edition[0].get("phash")
+        # assert edition, f"Could not find edition with multiverse id: {multiverse_id}"
+        # return edition[0].get("phash")
 
 class CandidateCard(MagicCard):
     """
