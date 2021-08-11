@@ -16,15 +16,23 @@ def compute_all_phashs():
     with open(DATA_FILE, "r") as j:
         data = json.load(j)
 
-    editions = []
+    phash_map = {}
+    id_map = {}
     for card in data.get("cards"):
-        editions += card.get("editions")
-    for i, edition in enumerate(editions):
-        # print(os.path.join(IMAGES_DIR, f"{edition.get('multiverse_id')}.jpeg"))
-        # img = cv2.imread(os.path.join(IMAGES_DIR, f"{edition.get('multiverse_id')}.jpeg"))
-        # phash = deck.MagicCard()._compute_phash(card_cutout = img)
-        phash = deck.ReferenceCard(edition.get("multiverse_id")).get_ref_phash()
-        print(i, len(editions), end="\r")
+        editions_with_phash = []
+        for edition in card.get("editions"):
+            card_image = cv2.imread(os.path.join(IMAGES_DIR, f"{edition.get('multiverse_id')}.jpeg"))
+            phash = deck.MagicCard()._compute_phash(card_image)
+            phash_map[phash.__str__()] = edition.get("multiverse_id")
+            id_map[edition.get("multiverse_id")] = phash.__str__()
+        print(card.get("name"), end="\r")
+
+    with open("data/phash_map.json", "w") as j:
+        json.dump(phash_map, j)
+    with open("data/id_map.json", "w") as j:
+        json.dump(id_map, j)
+
+
 
 def scrape_card_image(multiverse_id: str, directory: str):
     image_path = os.path.join(directory, f"{multiverse_id}.jpeg")
