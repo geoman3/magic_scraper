@@ -81,7 +81,7 @@ class MagicCard:
         """
         common phash function between the ref and candidate cards
         """
-        return imagehash.phash(Image.fromarray(card_cutout))
+        return imagehash.phash(Image.fromarray(card_cutout), hash_size = 32)
 
 class ReferenceCard(MagicCard):
     """

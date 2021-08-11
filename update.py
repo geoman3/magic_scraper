@@ -108,6 +108,7 @@ def scrape_all_cards_metadata():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    compute_all_phashs()
     spread = get_hamming_spread("73935")
     print(spread.keys())
     print(spread.values())
