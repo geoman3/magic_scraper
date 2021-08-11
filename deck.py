@@ -1,9 +1,8 @@
 from bs4 import BeautifulSoup
-import re, os, logging, json
+import re, os, json
 from PIL import Image
 import imagehash
 import numpy as np
-import itertools
 
 class BSParser:
     """
@@ -82,15 +81,17 @@ class MagicCard:
         """
         common phash function between the ref and candidate cards
         """
-        # Not done yet - have not done any preprocessing yet - place holder function
         return imagehash.phash(Image.fromarray(card_cutout))
 
 class ReferenceCard(MagicCard):
+    """
+    Represents a reference card with a known phash / multiverse id
+    """
     def __init__(self, multiverse_id) -> None:
         super().__init__()
         self.multiverse_id = multiverse_id
 
-    def compute_ref_phash(self):
+    def compute_ref_phash(self) -> imagehash.ImageHash:
         return self._compute_phash(
             self.get_ref_image(
                 self.multiverse_id
@@ -101,15 +102,10 @@ class ReferenceCard(MagicCard):
         assert os.path.exists(filepath), f"Could not find image at: {filepath}"
         return Image.open(filepath)
 
-    def get_ref_phash(self, data_path: str = os.path.join("data", "cards.json")):
+    def get_ref_phash(self, data_path: str = os.path.join("data", "id_map.json")):
         with open(data_path, "r") as j:
-            data = json.load(j)
-        edition = list(filter(
-            lambda x: x.get("multiverse_id") == self.multiverse_id,
-            itertools.chain.from_iterable(map(lambda x: x.get("editions"), data.get("cards")))))
-
-        # assert edition, f"Could not find edition with multiverse id: {multiverse_id}"
-        # return edition[0].get("phash")
+            hex_str = json.load(j).get(self.multiverse_id)
+        return imagehash.hex_to_hash(hex_str)
 
 class CandidateCard(MagicCard):
     """
@@ -119,7 +115,12 @@ class CandidateCard(MagicCard):
         super().__init__()
         self.candidate_image = candidate_image
 
-    def compute_candidate_phash(self):
-        return self._compute_phash(
-            self.candidate_image
-        )
+    def compute_candidate_phash(self, apply_processing = True) -> imagehash.ImageHash:
+        candidate = self.candidate_image
+        if apply_processing:
+            candidate = self.process_image(candidate)
+        return self._compute_phash(candidate)
+
+    def process_image(self, image: np.ndarray) -> np.ndarray:
+        # TO DO
+        return image

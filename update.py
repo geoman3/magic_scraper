@@ -5,12 +5,23 @@ import cv2
 
 import deck
 
-import json, logging, traceback, os
+import json, logging, traceback, os, collections
 
 GATHERER_PAGES = "https://gatherer.wizards.com/Pages/Search/Default.aspx?name=+[]"
 IMAGE_URL = "https://gatherer.wizards.com/Handlers/Image.ashx"
 DATA_FILE = os.path.join("data", "cards.json")
 IMAGES_DIR = os.path.join("data", "card_images")
+
+def get_hamming_spread(ref_multiverse_id: str) -> collections.Counter:
+    # This is just to get an idea of how close together 
+    deltas = []
+    with open(os.path.join("data", "id_map.json")) as j:
+        data = json.load(j)
+    ref_phash = imagehash.hex_to_hash(data.get(ref_multiverse_id))
+    for hex in data.values():
+        target_phash = imagehash.hex_to_hash(hex)
+        deltas.append(ref_phash - target_phash)
+    return collections.Counter(sorted(deltas))
 
 def compute_all_phashs():
     with open(DATA_FILE, "r") as j:
@@ -19,7 +30,6 @@ def compute_all_phashs():
     phash_map = {}
     id_map = {}
     for card in data.get("cards"):
-        editions_with_phash = []
         for edition in card.get("editions"):
             card_image = cv2.imread(os.path.join(IMAGES_DIR, f"{edition.get('multiverse_id')}.jpeg"))
             phash = deck.MagicCard()._compute_phash(card_image)
@@ -31,8 +41,6 @@ def compute_all_phashs():
         json.dump(phash_map, j)
     with open("data/id_map.json", "w") as j:
         json.dump(id_map, j)
-
-
 
 def scrape_card_image(multiverse_id: str, directory: str):
     image_path = os.path.join(directory, f"{multiverse_id}.jpeg")
@@ -100,5 +108,6 @@ def scrape_all_cards_metadata():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    compute_all_phashs()
-    
+    spread = get_hamming_spread("73935")
+    print(spread.keys())
+    print(spread.values())
