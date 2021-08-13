@@ -3,6 +3,7 @@ import re, os, json
 from PIL import Image
 import imagehash
 import numpy as np
+import cv2
 
 class BSParser:
     """
@@ -118,9 +119,21 @@ class CandidateCard(MagicCard):
     def compute_candidate_phash(self, apply_processing = True) -> imagehash.ImageHash:
         candidate = self.candidate_image
         if apply_processing:
-            candidate = self.process_image(candidate)
+            candidate = self._process_image(candidate)
         return self._compute_phash(candidate)
 
-    def process_image(self, image: np.ndarray) -> np.ndarray:
-        # TO DO
-        return image
+    def _process_image(self, image: np.ndarray) -> np.ndarray:
+        image1 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        image1 = clahe.
+        _, image2 = cv2.threshold(image1, 127, 255, 0)
+        contours = cv2.findContours(image2, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        image3 = cv2.drawContours(image, contours[0], -1, (0,255,0), thickness=3)
+        return image3
+
+if __name__ == "__main__":
+    import glob
+    for image_file in glob.glob(os.path.join("data", "test-data", "source", "*")):
+        img = cv2.imread(image_file)
+        procced_img = CandidateCard(None)._process_image(img)
+        cv2.imwrite(image_file.replace("source", "results"), procced_img)
